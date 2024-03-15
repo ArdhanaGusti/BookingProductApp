@@ -1,7 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace BookingApp.Server.Models
 {
+    [Index(nameof(Role.Name), IsUnique = true)]
     public class Role
     {
         [Key]

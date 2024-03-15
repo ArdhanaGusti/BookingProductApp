@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BookingApp.Server.Models
 {
+    [Index(nameof(Product.Slug), IsUnique = true)]
     public class Product
     {
         [Key]

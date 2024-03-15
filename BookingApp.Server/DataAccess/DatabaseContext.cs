@@ -14,9 +14,19 @@ namespace BookingApp.Server.Database
         public virtual DbSet<User> User => Set<User>();
         public virtual DbSet<Comment> Comment => Set<Comment>();
         public virtual DbSet<Role> Role => Set<Role>();
+        public virtual DbSet<Chat> Chat => Set<Chat>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<User>()
+                .HasIndex(x => x.Email)
+                .IsUnique();
+            modelBuilder.Entity<Role>()
+                .HasIndex(x => x.Name)
+                .IsUnique();
+            modelBuilder.Entity<Product>()
+                .HasIndex(x => x.Slug)
+                .IsUnique();
             base.OnModelCreating(modelBuilder);
         }
     }

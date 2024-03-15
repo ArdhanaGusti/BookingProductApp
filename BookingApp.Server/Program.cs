@@ -1,7 +1,7 @@
 using BookingApp.Server.Database;
-using BookingApp.Server.Middleware;
+using BookingApp.Server.Hubs;
+using BookingApp.Server.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -9,11 +9,26 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllers();
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("BookingDatabase")));
 
-builder.Services.AddControllers();
+builder.Services.AddSignalR(opt =>
+{
+    opt.EnableDetailedErrors = true;
+});
+
+builder.Services.AddCors(options => {
+    options.AddPolicy("CORSPolicy", builder => 
+    {
+        builder
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials()
+        .SetIsOriginAllowed((hosts) => true);
+    });
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -40,6 +55,8 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddSingleton<GetUserByJwt>();
+
 var app = builder.Build();
 
 app.UseDefaultFiles();
@@ -51,6 +68,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.MapControllers();
+
+app.UseCors("CORSPolicy");
+
+var webSocketOptions = new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromMinutes(2)
+};
+
+app.UseWebSockets(webSocketOptions);
+
 app.UseHttpsRedirection();
 
 app.UseRouting();
@@ -58,9 +86,10 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseRoleMiddleware();
-
-app.MapControllerRoute("default", "{controller}/{action}");
+app.UseEndpoints(endpoints =>
+{
+    _ = endpoints.MapHub<MessageHub>("/message");
+});
 
 app.MapFallbackToFile("/index.html");
 

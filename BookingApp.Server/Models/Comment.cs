@@ -11,5 +11,8 @@ namespace BookingApp.Server.Models
         [ForeignKey("User")]
         public required int UserId { get; set; }
         public virtual User? User { get; set; }
+        [ForeignKey("Product")]
+        public required int ProductId { get; set; }
+        public virtual Product? Product { get; set; }
     }
 }
